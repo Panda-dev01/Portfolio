@@ -1,0 +1,49 @@
+/* =================================================================== */
+/* APRICOT ROUGE rgb(220, 101, 86)
+====================================================================== */
+
+.line:before,
+.input-area-visual .send-btn,
+.btn-primary,
+.user-message .message-bubble,
+.single-project-card .project-media-wrapper .media-icon-overlay,
+.intro-screen .rounded-animation,
+.intro-screen .hello:before,
+.intro-screen .hello:after {
+    background-color: rgb(220, 101, 86)
+}
+
+.message-bubble.single-project-card {
+    background-color: rgba(220, 101, 86);
+}
+
+.intro-screen h1 span,
+.vertical-texts-container .vertical-text,
+.intro-bottom-content .quote p:before,
+.btn-primary.btn-secondary,
+.chat-footer .primary-nav .btn-primary-nav:hover,
+body.dark .chat-footer .primary-nav .btn-primary-nav:hover,
+.chat-footer .primary-nav .btn-primary-nav:hover i { 
+    color: rgb(220, 101, 86); 
+}
+
+.chat-footer .primary-nav .btn-primary-nav i {
+    color: rgba(220, 101, 86, .7);
+}
+
+.chat-footer .primary-nav .btn-primary-nav:hover,
+body.dark .chat-footer .primary-nav .btn-primary-nav:hover { 
+   border-color: rgba(220, 101, 86, .7); 
+}
+
+.btn-secondary {
+    border: 1px solid rgb(220, 101, 86);
+}
+
+.single-project-card {
+    border: 1px solid rgba(220, 101, 86, .1);
+}
+
+.chat-avatar {
+    border: 1px solid rgba(220, 101, 86, .3);
+}

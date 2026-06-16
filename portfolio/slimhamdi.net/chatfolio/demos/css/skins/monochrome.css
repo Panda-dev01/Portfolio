@@ -1,0 +1,141 @@
+/* =================================================================== */
+/* MONOCHROME : LIGHT + DARK
+====================================================================== */
+
+.intro-screen .intro-image,
+.chat-avatar,
+.single-project-card .project-media-wrapper img,
+.slider-img,
+.modal-content-area video, .modal-content-area iframe,
+.client-logos-wrapper .client-logo-item img,
+.stars {
+    filter: grayscale(1);
+}
+
+/*** LIGHT ***/
+
+.line:before,
+.input-area-visual .send-btn,
+.btn-primary,
+.user-message .message-bubble,
+.single-project-card .project-media-wrapper .media-icon-overlay,
+.intro-screen .rounded-animation,
+.intro-screen .hello:before,
+.intro-screen .hello:after {
+    background-color: #333;
+}
+
+.message-bubble.single-project-card {
+    background-color: rgba(51, 51, 51, .1);
+}
+
+.btn-primary.btn-secondary,
+.intro-screen h1 span,
+.vertical-texts-container .vertical-text,
+.intro-bottom-content .quote p:before,
+.btn-primary.btn-secondary,
+.chat-footer .primary-nav .btn-primary-nav:hover,
+.chat-footer .primary-nav .btn-primary-nav:hover i { 
+    color: #333; 
+}
+
+.chat-footer .primary-nav .btn-primary-nav i,
+.chat-footer .primary-nav .btn-primary-nav { 
+    color: #666; 
+}
+.chat-footer .primary-nav .btn-primary-nav:hover { 
+    border-color: rgba(51, 51, 51, 0.7); 
+}
+
+.single-project-card {
+    border: 1px solid rgba(51, 51, 51, .1);
+}
+
+.chat-avatar {
+    border: 1px solid rgba(51, 51, 51, .3);
+}
+
+.btn-secondary {
+    border: 1px solid rgb(51, 51, 51);
+}
+
+.contact-section-wrapper .contact-social-icon i:hover {
+    background-color: #333 !important;
+}
+
+.vertical-texts-container .vertical-text {
+    opacity: .05;
+}
+
+/*** DARK ***/
+
+body.dark .line:before,
+body.dark .input-area-visual .send-btn,
+body.dark .btn-primary,
+body.dark .user-message .message-bubble,
+body.dark .single-project-card .project-media-wrapper .media-icon-overlay,
+body.dark .intro-screen .rounded-animation,
+body.dark .intro-screen .hello:before,
+body.dark .intro-screen .hello:after {
+    background-color: #fff;
+}
+
+body.dark .ajax-contact-form .btn-primary {
+    background-color: #333;
+}
+
+body.dark .message-bubble.single-project-card {
+    background-color: rgba(255, 255, 255, .1);
+}
+
+body.dark .btn-primary.btn-secondary,
+body.dark .intro-screen h1 span,
+body.dark .vertical-texts-container .vertical-text,
+body.dark .intro-bottom-content .quote p:before,
+body.dark .btn-primary.btn-secondary,
+body.dark .chat-footer .primary-nav .btn-primary-nav:hover,
+body.dark .chat-footer .primary-nav .btn-primary-nav:hover i { 
+    color: rgb(241, 245, 249); 
+}
+
+body.dark .btn-primary,
+body.dark .chat-footer .input-area-visual .send-btn,
+body.dark .user-message .message-bubble,
+body.dark .single-project-card .project-media-wrapper .media-icon-overlay {
+    color: #333;
+}
+
+body.dark .chat-footer .primary-nav .btn-primary-nav i {
+    color: #777;
+}
+
+body.dark .chat-footer .primary-nav .btn-primary-nav:hover,
+body.dark .chat-footer .primary-nav .btn-primary-nav:hover i { 
+    border-color: rgba(241, 245, 249, 0.7);
+    color: rgb(241, 245, 249);
+}
+
+body.dark .btn-secondary {
+    border: 1px solid rgb(241, 245, 249);
+}
+
+body.dark .single-project-card {
+    border: 1px solid rgba(241, 245, 249, .1);
+}
+
+body.dark .chat-avatar {
+    border: 1px solid rgba(241, 245, 249, .3);
+}
+
+body.dark .vertical-texts-container .vertical-text {
+    opacity: .03;
+}
+
+@media (min-width: 1024px) {
+    body.dark .btn-primary:not(.btn-secondary) .button-content span:nth-child(2) {
+        color: #333;
+    }
+    body.dark .btn-secondary .button-content span:nth-child(2) {
+        color: #fff;
+    }
+}

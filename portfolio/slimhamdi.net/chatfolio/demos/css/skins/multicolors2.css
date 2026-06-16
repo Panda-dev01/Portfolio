@@ -1,0 +1,67 @@
+/* =================================================================== */
+/* MULTI COLORS
+====================================================================== */
+
+.line:before,
+.input-area-visual .send-btn,
+.btn-primary,
+.user-message .message-bubble,
+.single-project-card .project-media-wrapper .media-icon-overlay,
+.intro-screen .rounded-animation,
+.intro-screen .hello:before,
+.intro-screen .hello:after {
+    background-color: rgb(29, 139, 198);
+}
+
+.message-bubble.single-project-card {
+    background-color: rgba(29, 139, 198, .1);
+}
+
+.intro-screen h1 span,
+.vertical-texts-container .vertical-text,
+.intro-bottom-content .quote p:before,
+.btn-primary.btn-secondary { 
+    color: rgb(29, 139, 198); 
+}
+
+.chat-footer .primary-nav .btn-primary-nav[data-flow="about"] i { color: #1d8bc6; }
+.chat-footer .primary-nav .btn-primary-nav[data-flow="about"]:hover { 
+    border-color: rgba(29, 139, 198, 0.5);
+    color: rgb(29, 139, 198); 
+}
+
+.chat-footer .primary-nav .btn-primary-nav[data-flow="skills"] i { color: #f86924; }
+.chat-footer .primary-nav .btn-primary-nav[data-flow="skills"]:hover { 
+    border-color: rgba(248, 105, 36, 0.5);
+    color: rgb(248, 105, 36);
+}
+
+.chat-footer .primary-nav .btn-primary-nav[data-flow="projects"] i { color: #ffa003; }
+.chat-footer .primary-nav .btn-primary-nav[data-flow="projects"]:hover { 
+    border-color: rgba(255, 160, 3, 0.5);
+    color: rgb(255, 160, 3); 
+}
+
+.chat-footer .primary-nav .btn-primary-nav[data-flow="clients"] i { color: #32bc7a; }
+.chat-footer .primary-nav .btn-primary-nav[data-flow="clients"]:hover { 
+    border-color: rgba(50, 188, 122, 0.5); 
+    color: rgb(50, 188, 122); 
+}
+
+.chat-footer .primary-nav .btn-primary-nav[data-flow="contact"] i { color: #f05a48; }
+.chat-footer .primary-nav .btn-primary-nav[data-flow="contact"]:hover { 
+    border-color: rgba(240, 90, 72, 0.5);
+    color: rgb(240, 90, 72); 
+}
+
+.btn-secondary {
+    border: 1px solid rgb(77, 150, 255);
+}
+
+.single-project-card {
+    border: 1px solid rgba(29, 139, 198, .1);
+}
+
+.chat-avatar {
+    border: 1px solid rgba(29, 139, 198, .3);
+}
