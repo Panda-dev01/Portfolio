@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Reusable Modal</title>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+<style>
+
+
+.open-btn{
+    border:none;
+    background:#0060AE;
+    color:#fff;
+    padding:14px 24px;
+    border-radius:12px;
+    cursor:pointer;
+    font-size:15px;
+    font-weight:600;
+    transition:.3s;
+}
+
+.open-btn:hover{
+    background:#004f91;
+    transform:translateY(-2px);
+}
+
+.modal{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.65);
+    backdrop-filter:blur(6px);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:.35s ease;
+    z-index:9999;
+}
+
+.modal.show{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+}
+
+.modal-box{
+    width:100%;
+    max-width:560px;
+    background:#fff;
+    border-radius:22px;
+    overflow:hidden;
+    position:relative;
+    box-shadow:0 25px 80px rgba(0,0,0,.25);
+    transform:translateY(35px) scale(.95);
+    opacity:0;
+    transition:.35s ease;
+}
+
+.modal.show .modal-box{
+    transform:translateY(0) scale(1);
+    opacity:1;
+}
+
+.modal-header{
+    padding:28px;
+    background:linear-gradient(135deg,#0060AE,#1687df);
+    color:#fff;
+    position:relative;
+    overflow:hidden;
+}
+
+.modal-header::before{
+    content:"";
+    position:absolute;
+    width:160px;
+    height:160px;
+    border-radius:50%;
+    background:rgba(255,255,255,.13);
+    top:-70px;
+    right:-40px;
+}
+
+.modal-header h2{
+    font-size:24px;
+    margin-bottom:6px;
+    position:relative;
+}
+
+.modal-header p{
+    font-size:14px;
+    opacity:.9;
+    position:relative;
+}
+
+.modal-close{
+    position:absolute;
+    top:16px;
+    right:16px;
+    width:42px;
+    height:42px;
+    border:none;
+    border-radius:14px;
+    background:rgba(255,255,255,.18);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    transition:.3s ease;
+    z-index:2;
+}
+
+.modal-close i{
+    font-size:18px;
+}
+
+.modal-close:hover{
+    background:#fff;
+    color:#0060AE;
+    transform:rotate(90deg);
+}
+
+.modal-body{
+    padding:28px;
+    color:#334155;
+    line-height:1.7;
+    font-size:15px;
+}
+
+.info-card{
+    background:#f1f7fc;
+    border:1px solid #d9eaf8;
+    padding:16px;
+    border-radius:14px;
+    margin-top:15px;
+}
+
+.modal-footer{
+    padding:20px 28px;
+    border-top:1px solid #e5e7eb;
+    display:flex;
+    justify-content:flex-end;
+    gap:12px;
+}
+
+.btn{
+    border:none;
+    padding:12px 22px;
+    border-radius:11px;
+    cursor:pointer;
+    font-weight:600;
+    transition:.3s;
+}
+
+.btn-cancel{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+.btn-cancel:hover{
+    background:#d1d5db;
+}
+
+.btn-save{
+    background:#0060AE;
+    color:#fff;
+}
+
+.btn-save:hover{
+    background:#004f91;
+}
+
+@media(max-width:768px){
+    body{
+        flex-direction:column;
+    }
+
+    .modal{
+        padding:16px;
+    }
+
+    .modal-box{
+        max-width:100%;
+        border-radius:18px;
+    }
+
+    .modal-header,
+    .modal-body,
+    .modal-footer{
+        padding:22px;
+    }
+
+    .modal-footer{
+        flex-direction:column;
+    }
+
+    .btn{
+        width:100%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<button class="open-btn" data-target="profileModal">
+    Open Profile Modal
+</button>
+
+
+
+<div class="modal" data-modal="profileModal">
+    <div class="modal-box">
+
+        <button class="modal-close" aria-label="Close">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <div class="modal-header">
+            <h2>Profile Details</h2>
+            <p>Reusable modal with smooth animation</p>
+        </div>
+
+        <div class="modal-body">
+            <p>
+                Ye modal reusable hai. Sirf button ka 
+                <b>data-target</b> aur modal ka <b>data-modal</b> same rakhna hai.
+            </p>
+
+            <div class="info-card">
+                Is modal ko multiple times use kar sakty ho. Animation, overlay,
+                responsive layout aur ESC close bhi included hai.
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn btn-cancel modal-close-btn">Cancel</button>
+            <button class="btn btn-save">Save Changes</button>
+        </div>
+
+    </div>
+</div>
+
+
+<script>
+const openButtons = document.querySelectorAll("[data-target]");
+
+openButtons.forEach(button => {
+    button.addEventListener("click", () => {
+        const modalName = button.getAttribute("data-target");
+        const modal = document.querySelector(`[data-modal="${modalName}"]`);
+
+        if(modal){
+            modal.classList.add("show");
+            document.body.style.overflow = "hidden";
+        }
+    });
+});
+
+function closeModal(modal){
+    modal.classList.remove("show");
+    document.body.style.overflow = "";
+}
+
+document.querySelectorAll(".modal").forEach(modal => {
+    modal.addEventListener("click", e => {
+        if(e.target === modal){
+            closeModal(modal);
+        }
+    });
+
+    modal.querySelectorAll(".modal-close, .modal-close-btn").forEach(closeBtn => {
+        closeBtn.addEventListener("click", () => {
+            closeModal(modal);
+        });
+    });
+});
+
+document.addEventListener("keydown", e => {
+    if(e.key === "Escape"){
+        document.querySelectorAll(".modal.show").forEach(modal => {
+            closeModal(modal);
+        });
+    }
+});
+</script>
+
+</body>
+</html>
