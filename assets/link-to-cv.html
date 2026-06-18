@@ -6,12 +6,7 @@
 <title>Downloading CV...</title>
 
 <style>
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-    font-family:Inter,Arial,sans-serif;
-}
+*{margin:0;padding:0;box-sizing:border-box;font-family:Inter,Arial,sans-serif}
 
 body{
     min-height:100vh;
@@ -24,17 +19,17 @@ body{
 .card{
     background:#fff;
     padding:40px;
-    border-radius:20px;
+    border-radius:22px;
     text-align:center;
     box-shadow:0 10px 40px rgba(0,0,0,.08);
-    max-width:500px;
+    max-width:520px;
     width:90%;
 }
 
 .icon{
     width:80px;
     height:80px;
-    margin:auto;
+    margin:0 auto 20px;
     border-radius:50%;
     background:#e8f4ff;
     color:#0060AE;
@@ -42,50 +37,42 @@ body{
     align-items:center;
     justify-content:center;
     font-size:36px;
-    margin-bottom:20px;
 }
 
-h2{
-    color:#111827;
-    margin-bottom:10px;
-}
-
-p{
-    color:#6b7280;
-    line-height:1.7;
-}
+h2{color:#111827;margin-bottom:10px}
+p{color:#6b7280;line-height:1.7}
 
 .loader{
-    margin:20px auto 0;
-    width:40px;
-    height:40px;
+    margin:22px auto 0;
+    width:42px;
+    height:42px;
     border:4px solid #dbeafe;
     border-top:4px solid #0060AE;
     border-radius:50%;
     animation:spin 1s linear infinite;
 }
 
-.back-btn{
+.actions{
     display:none;
-    margin-top:25px;
-    padding:12px 24px;
+    margin-top:26px;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+.btn{
+    padding:12px 22px;
     border-radius:10px;
-    background:#0060AE;
-    color:#fff;
-    border:none;
     text-decoration:none;
     font-weight:600;
-    cursor:pointer;
+    color:#fff;
 }
 
-.back-btn:hover{
-    background:#004f91;
-}
+.back-btn{background:#0060AE}
+.open-btn{background:#111827}
 
 @keyframes spin{
-    100%{
-        transform:rotate(360deg);
-    }
+    100%{transform:rotate(360deg)}
 }
 </style>
 </head>
@@ -98,44 +85,38 @@ p{
     <h2 id="title">CV Download Started</h2>
 
     <p id="message">
-        CV is being downloaded automatically.
-        Please wait a moment.
+        Your CV is being downloaded automatically. Please wait a moment.
     </p>
 
     <div class="loader" id="loader"></div>
 
-   <a href="../index.html" class="back-btn" id="backBtn">
-    ← Back to Portfolio
-</a>
+    <div class="actions" id="actions">
+        <a href="../index.html" class="btn back-btn">← Back to Portfolio</a>
+        <a href="../assets/cv/Ammar Shahid Resume (1).pdf" target="_blank" class="btn open-btn">Open CV</a>
+    </div>
 </div>
-
 <script>
-window.addEventListener("load", () => {
+window.addEventListener("load", function () {
+    const cvPath = "../assets/cv/Ammar Shahid Resume (1).pdf";
 
-    setTimeout(() => {
+    setTimeout(function () {
         const link = document.createElement("a");
-
-        link.href = "../assets/cv/Ammar-Shahid-CV.pdf";
+        link.href = cvPath;
         link.download = "Ammar-Shahid-CV.pdf";
-
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-    }, 600);
+    }, 700);
 
-    setTimeout(() => {
+    setTimeout(function () {
         document.getElementById("icon").innerHTML = "✅";
         document.getElementById("title").innerText = "Download Completed";
-        document.getElementById("message").innerText = "CV has been downloaded successfully.";
+        document.getElementById("message").innerText =
+            "Your CV has been downloaded successfully. If it did not start, click Open CV.";
         document.getElementById("loader").style.display = "none";
-        document.getElementById("backBtn").style.display = "inline-block";
+        document.getElementById("actions").style.display = "flex";
     }, 2500);
-
 });
-
-// function goBack(){
-//     window.location.href = "./index.html";
-// }
 </script>
 
 </body>
