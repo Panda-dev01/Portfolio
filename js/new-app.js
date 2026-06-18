@@ -1,298 +1,609 @@
 "use strict";
 
-document.addEventListener("DOMContentLoaded", function () {
-    const chatWindow = document.getElementById("chat-window");
-    const chatInput = document.getElementById("chat-input");
-    const sendButton = document.getElementById("send-button");
-    const navButtons = document.querySelectorAll("[data-flow]");
-    const actionButtons = document.querySelectorAll("[data-action]");
-    const introScreen = document.getElementById("intro-screen");
+/*
+  Readable Chatfolio app.js
+  - No ThemeForest / Envato redirect
+  - No jQuery
+  - Works with the existing index.html structure
+*/
 
-    const flows = {};
-    const triggers = {};
+const App = (() => {
+  const state = {
+    flows: {},
+    keywords: {},
+    projectIndex: 0,
+    projects: [],
+    projectGlobalButtons: [],
+    projectFinalButtons: []
+  };
 
-    document.querySelectorAll("[data-flow-id], [id^='flow-']").forEach(section => {
-        const id = section.dataset.flowId || section.id.replace("flow-", "");
-        flows[id] = section;
+  let chatWindow;
+  let chatInput;
+  let sendButton;
+  let menuButton;
+  let introScreen;
 
-        const triggerText = section.dataset.triggers || "";
-        triggerText.split(",").forEach(t => {
-            if (t.trim()) triggers[t.trim().toLowerCase()] = id;
-        });
+  const selectors = {
+    chatWindow: "#chat-window",
+    chatInput: "#chat-input",
+    sendButton: "#send-button",
+    menuButton: "#btn-menu-toggle",
+    introScreen: "#intro-screen",
+    masterModal: "#master-modal",
+    modalContentArea: "#modal-content-area",
+    contactForm: "#ajax-contact-form",
+    submitButton: "#form-submit-btn"
+  };
+
+  function qs(selector, parent = document) {
+    return parent.querySelector(selector);
+  }
+
+  function qsa(selector, parent = document) {
+    return Array.from(parent.querySelectorAll(selector));
+  }
+
+  function escapeHtml(value = "") {
+    return String(value)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function getAttr(element, name, fallback = "") {
+    return element?.getAttribute(name) || fallback;
+  }
+
+  function normalize(value = "") {
+    return value.toLowerCase().trim();
+  }
+
+  function scrollChatToBottom() {
+    if (!chatWindow) return;
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
+
+  function hideIntro() {
+    introScreen?.classList.add("fade-out");
+  }
+
+  function toggleSendButtonState() {
+    if (!sendButton || !chatInput) return;
+    sendButton.disabled = chatInput.value.trim().length === 0;
+  }
+
+  function setBusy(isBusy) {
+    if (chatInput) chatInput.disabled = isBusy;
+    if (sendButton) sendButton.disabled = isBusy || !chatInput?.value.trim();
+    qsa(".btn-primary-nav").forEach((button) => button.classList.toggle("disabled", isBusy));
+  }
+
+  function createMessageRow(type = "ai") {
+    const row = document.createElement("div");
+    row.className = `message-row ${type === "user" ? "user-message" : "ai-message"}`;
+
+    if (type === "ai") {
+      const avatar = document.getElementById("chat-avatar")?.cloneNode(true);
+      if (avatar) avatar.classList.add("chat-avatar");
+      if (avatar) row.appendChild(avatar);
+    }
+
+    const bubble = document.createElement("div");
+    bubble.className = "message-bubble";
+    row.appendChild(bubble);
+
+    return { row, bubble };
+  }
+
+  function appendUserMessage(text) {
+    const { row, bubble } = createMessageRow("user");
+    bubble.textContent = text;
+    chatWindow.appendChild(row);
+    scrollChatToBottom();
+  }
+
+  function appendAIMessage(content, options = {}) {
+    const { row, bubble } = createMessageRow("ai");
+    if (options.html) {
+      bubble.innerHTML = content;
+    } else {
+      bubble.textContent = content;
+    }
+    chatWindow.appendChild(row);
+    scrollChatToBottom();
+    return bubble;
+  }
+
+  function showTyping() {
+    const { row, bubble } = createMessageRow("ai");
+    row.classList.add("typing-active");
+    bubble.innerHTML = `
+      <div class="typing-indicator">
+        <span></span><span></span><span></span>
+      </div>
+    `;
+    chatWindow.appendChild(row);
+    scrollChatToBottom();
+    return row;
+  }
+
+  function addOptions(buttons = []) {
+    if (!buttons.length) return;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "contextual-options";
+
+    buttons.forEach((button) => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = `btn btn-primary ${button.styleClass || ""}`.trim();
+      btn.innerHTML = `<span class="button-content"><span>${escapeHtml(button.text)}</span></span>`;
+
+      btn.addEventListener("click", () => {
+        if (button.link) {
+          window.open(button.link, "_blank");
+          return;
+        }
+        if (button.action === "open_contact_form") {
+          openContactModal();
+          return;
+        }
+        if (button.action) startConversation(button.action, button.text);
+      });
+
+      wrapper.appendChild(btn);
     });
 
-    document.querySelectorAll("#flow-projects, #flow-clients, #flow-contact").forEach(section => {
-        const id = section.id.replace("flow-", "");
-        flows[id] = section;
+    chatWindow.appendChild(wrapper);
+    scrollChatToBottom();
+  }
 
-        const triggerText = section.dataset.triggers || "";
-        triggerText.split(",").forEach(t => {
-            if (t.trim()) triggers[t.trim().toLowerCase()] = id;
-        });
+  function parseButtons(container) {
+    return qsa(".options li", container).map((item) => ({
+      text: item.textContent.trim(),
+      action: getAttr(item, "data-action"),
+      link: getAttr(item, "data-link"),
+      styleClass: getAttr(item, "data-class")
+    }));
+  }
+
+  function parseGenericFlows() {
+    qsa(".generic-flow").forEach((flowElement) => {
+      const id = getAttr(flowElement, "data-flow-id") || flowElement.id.replace("flow-", "");
+      if (!id) return;
+
+      const blocks = qsa(":scope > *", flowElement)
+        .filter((child) => !child.classList.contains("options"))
+        .map((child) => child.outerHTML)
+        .join("");
+
+      state.flows[id] = {
+        type: "generic",
+        html: `<div class="rich-paragraph">${blocks}</div>`,
+        options: parseButtons(flowElement)
+      };
+
+      registerTriggers(flowElement, id);
     });
+  }
 
-    function hideIntro() {
-        if (introScreen) introScreen.style.display = "none";
-    }
+  function parseProjectsFlow() {
+    const projectsFlow = qs("#flow-projects");
+    if (!projectsFlow) return;
 
-    function scrollBottom() {
-        chatWindow.scrollTop = chatWindow.scrollHeight;
-    }
+    state.projects = qsa(".project-item", projectsFlow).map((item) => ({
+      title: getAttr(item, "data-title", "Project"),
+      link: getAttr(item, "data-link"),
+      image: getAttr(item, "data-image"),
+      media: getAttr(item, "data-media", "image"),
+      youtubeId: getAttr(item, "data-youtube-id"),
+      videoUrl: getAttr(item, "data-video-url"),
+      summary: qs(".summary", item)?.textContent.trim() || "",
+      gallery: qsa(".gallery-urls img", item).map((img) => img.getAttribute("src"))
+    }));
 
-    function addMessage(content, type = "ai") {
-        hideIntro();
+    state.projectGlobalButtons = qsa(".project-buttons .global li", projectsFlow).map((item) => ({
+      text: item.textContent.trim(),
+      action: getAttr(item, "data-action"),
+      styleClass: getAttr(item, "data-class")
+    }));
 
-        const row = document.createElement("div");
-        row.className = `message-row ${type}-message`;
+    state.projectFinalButtons = qsa(".project-buttons .final li", projectsFlow).map((item) => ({
+      text: item.textContent.trim(),
+      action: getAttr(item, "data-action"),
+      styleClass: getAttr(item, "data-class")
+    }));
 
-        const bubble = document.createElement("div");
-        bubble.className = "message-bubble";
-        bubble.innerHTML = content;
-
-        row.appendChild(bubble);
-        chatWindow.appendChild(row);
-        scrollBottom();
-    }
-
-    function addUserMessage(text) {
-        addMessage(text, "user");
-    }
-
-    function renderOptions(section) {
-        const options = section.querySelectorAll(".options li, .project-buttons li");
-        if (!options.length) return "";
-
-        let html = `<div class="button-container">`;
-
-        options.forEach(opt => {
-            const text = opt.textContent.trim();
-            const action = opt.dataset.action || "";
-            const link = opt.dataset.link || "";
-            const cls = opt.dataset.class || "";
-
-            if (link) {
-                html += `<a href="${link}" target="_blank" class="btn btn-primary ${cls}">
-                    <span class="button-content"><span>${text}</span></span>
-                </a>`;
-            } else {
-                html += `<button class="btn btn-primary ${cls}" data-action="${action}">
-                    <span class="button-content"><span>${text}</span></span>
-                </button>`;
-            }
-        });
-
-        html += `</div>`;
-        return html;
-    }
-
-    function runFlow(flowId) {
-        const section = flows[flowId];
-
-        if (!section) {
-            addMessage(`
-                <p>Sorry, ye section nahi mila.</p>
-                <p>Try: <strong>about</strong>, <strong>skills</strong>, <strong>projects</strong>, <strong>clients</strong>, <strong>contact</strong></p>
-            `);
-            return;
-        }
-
-        if (flowId === "projects") {
-            renderProjects(section);
-            return;
-        }
-
-        if (flowId === "clients") {
-            renderClients(section);
-            return;
-        }
-
-        if (flowId === "contact") {
-            renderContact(section);
-            return;
-        }
-
-        let content = "";
-
-        Array.from(section.children).forEach(child => {
-            if (!child.classList.contains("options")) {
-                content += child.outerHTML;
-            }
-        });
-
-        content += renderOptions(section);
-
-        addMessage(content);
-    }
-
-    function renderProjects(section) {
-        const intro = section.querySelector(".intro")?.outerHTML || "";
-        const projects = section.querySelectorAll(".project-item");
-
-        let html = intro;
-        html += `<div class="projects-chat-grid">`;
-
-        projects.forEach(project => {
-            const title = project.dataset.title || "Project";
-            const image = project.dataset.image || "";
-            const summary = project.querySelector(".summary")?.textContent || "";
-            const link = project.dataset.link || "#";
-
-            html += `
-                <div class="chat-project-card">
-                    <img src="${image}" alt="${title}">
-                    <div>
-                        <h3>${title}</h3>
-                        <p>${summary}</p>
-                        <a href="${link}" target="_blank" class="btn btn-primary">View Project</a>
-                    </div>
-                </div>
-            `;
-        });
-
-        html += `</div>`;
-        html += renderOptions(section);
-
-        addMessage(html);
-    }
-
-    function renderClients(section) {
-        const intro = section.querySelector(".intro")?.outerHTML || "";
-        const clients = section.querySelectorAll(".client-item");
-
-        let html = intro;
-        html += `<div class="client-logo-grid">`;
-
-        clients.forEach(client => {
-            const name = client.dataset.name || "Client";
-            const logo = client.dataset.logo || "";
-
-            html += `
-                <div class="client-logo-card">
-                    <img src="${logo}" alt="${name}">
-                </div>
-            `;
-        });
-
-        html += `</div>`;
-        html += renderOptions(section);
-
-        addMessage(html);
-    }
-
-    function renderContact(section) {
-        const intro = section.querySelector(".intro")?.outerHTML || "";
-        const contacts = section.querySelectorAll(".contact-row");
-        const socials = section.querySelectorAll(".social-item");
-
-        let html = intro;
-        html += `<div class="contact-details">`;
-
-        contacts.forEach(item => {
-            html += `
-                <div class="contact-detail-row">
-                    <i class="${item.dataset.icon}"></i>
-                    <strong>${item.dataset.label}</strong>
-                    <span>${item.textContent.trim()}</span>
-                </div>
-            `;
-        });
-
-        html += `</div>`;
-
-        html += `<div class="social-row">`;
-        socials.forEach(item => {
-            html += `
-                <a href="${item.dataset.url}" target="_blank" class="social-icon ${item.dataset.class}">
-                    <i class="${item.dataset.icon}"></i>
-                </a>
-            `;
-        });
-        html += `</div>`;
-
-        html += `<button class="btn btn-primary" onclick="openContactModal()">Send Message</button>`;
-        html += renderOptions(section);
-
-        addMessage(html);
-    }
-
-    function handleInput(text) {
-        const value = text.toLowerCase().trim();
-
-        if (!value) return;
-
-        addUserMessage(text);
-
-        const matchedFlow = triggers[value] || value;
-
-        setTimeout(() => {
-            runFlow(matchedFlow);
-        }, 400);
-    }
-
-    navButtons.forEach(btn => {
-        btn.addEventListener("click", function () {
-            runFlow(this.dataset.flow);
-        });
-    });
-
-    document.addEventListener("click", function (e) {
-        const btn = e.target.closest("[data-action]");
-
-        if (btn) {
-            const action = btn.dataset.action;
-            if (action) runFlow(action);
-        }
-    });
-
-    if (chatInput) {
-        chatInput.addEventListener("input", function () {
-            sendButton.disabled = this.value.trim() === "";
-        });
-
-        chatInput.addEventListener("keydown", function (e) {
-            if (e.key === "Enter") {
-                e.preventDefault();
-
-                const text = chatInput.value.trim();
-                chatInput.value = "";
-                sendButton.disabled = true;
-
-                handleInput(text);
-            }
-        });
-    }
-
-    if (sendButton) {
-        sendButton.addEventListener("click", function () {
-            const text = chatInput.value.trim();
-            chatInput.value = "";
-            sendButton.disabled = true;
-
-            handleInput(text);
-        });
-    }
-
-    window.openContactModal = function () {
-        const modal = document.getElementById("master-modal");
-        if (modal) modal.classList.add("active");
+    state.flows.projects = {
+      type: "projects",
+      intro: qs(".intro", projectsFlow)?.innerHTML || "Here are my recent projects."
     };
 
-    window.closeContactModal = function () {
-        const modal = document.getElementById("master-modal");
-        if (modal) modal.classList.remove("active");
+    registerTriggers(projectsFlow, "projects");
+  }
+
+  function parseClientsFlow() {
+    const clientsFlow = qs("#flow-clients");
+    if (!clientsFlow) return;
+
+    const logos = qsa(".client-item", clientsFlow).map((item) => ({
+      name: getAttr(item, "data-name"),
+      logo: getAttr(item, "data-logo")
+    }));
+
+    state.flows.clients = {
+      type: "clients",
+      intro: qs(".intro", clientsFlow)?.innerHTML || "",
+      logos,
+      options: parseButtons(clientsFlow)
     };
 
-    document.addEventListener("keydown", function (e) {
-        if (e.key === "Escape") {
-            closeContactModal();
-        }
+    registerTriggers(clientsFlow, "clients");
+  }
+
+  function parseContactFlow() {
+    const contactFlow = qs("#flow-contact");
+    if (!contactFlow) return;
+
+    const direct = qsa(".contact-row", contactFlow).map((item) => ({
+      label: getAttr(item, "data-label"),
+      icon: getAttr(item, "data-icon"),
+      value: item.textContent.trim()
+    }));
+
+    const socials = qsa(".social-item", contactFlow).map((item) => ({
+      icon: getAttr(item, "data-icon"),
+      url: getAttr(item, "data-url"),
+      styleClass: getAttr(item, "data-class")
+    }));
+
+    state.flows.contact = {
+      type: "contact",
+      intro: qs(".intro", contactFlow)?.innerHTML || "",
+      direct,
+      socials,
+      options: parseButtons(contactFlow)
+    };
+
+    registerTriggers(contactFlow, "contact");
+  }
+
+  function registerTriggers(element, flowId) {
+    const triggers = getAttr(element, "data-triggers");
+    if (!triggers) return;
+    triggers.split(",").map(normalize).filter(Boolean).forEach((trigger) => {
+      state.keywords[trigger] = flowId;
+    });
+  }
+
+  function findFlowId(input) {
+    const text = normalize(input);
+    if (!text) return "error";
+
+    if (state.flows[text]) return text;
+    if (state.keywords[text]) return state.keywords[text];
+
+    const exactTrigger = Object.keys(state.keywords).find((keyword) => text === keyword);
+    if (exactTrigger) return state.keywords[exactTrigger];
+
+    const containedTrigger = Object.keys(state.keywords)
+      .sort((a, b) => b.length - a.length)
+      .find((keyword) => keyword.length > 2 && text.includes(keyword));
+
+    return containedTrigger ? state.keywords[containedTrigger] : "error";
+  }
+
+  function renderGeneric(flow) {
+    appendAIMessage(flow.html, { html: true });
+    addOptions(flow.options || []);
+  }
+
+  function renderProjects(flow) {
+    state.projectIndex = 0;
+    appendAIMessage(`<div class="rich-paragraph"><p>${flow.intro}</p></div>`, { html: true });
+    renderNextProject();
+  }
+
+  function renderNextProject() {
+    const project = state.projects[state.projectIndex];
+    if (!project) return;
+
+    const isLast = state.projectIndex === state.projects.length - 1;
+    const mediaIcon = project.media === "youtube" || project.media === "video" ? "fa-solid fa-play" : "fa-regular fa-image";
+    const previewLink = project.link
+      ? `<a href="${escapeHtml(project.link)}" target="_blank" class="preview-link">Preview <i class="fa-solid fa-arrow-up-right-from-square"></i></a>`
+      : "";
+
+    const html = `
+      <div class="single-project-card project-fade-in">
+        <div class="project-card">
+          <div class="project-media-wrapper project-${escapeHtml(project.media)}" data-project-index="${state.projectIndex}">
+            ${project.image ? `<img src="${escapeHtml(project.image)}" alt="${escapeHtml(project.title)}">` : ""}
+            <span class="media-icon-overlay"><i class="${mediaIcon}"></i></span>
+          </div>
+          <div class="details">
+            <h4>${escapeHtml(project.title)}</h4>
+            <p>${escapeHtml(project.summary)}</p>
+            ${previewLink}
+          </div>
+        </div>
+      </div>
+    `;
+
+    appendAIMessage(html, { html: true });
+
+    const buttons = [];
+    if (!isLast) {
+      buttons.push({ text: "Show Next Project", action: "__next_project" });
+      buttons.push(...state.projectGlobalButtons);
+    } else {
+      buttons.push(...state.projectFinalButtons);
+    }
+
+    addOptions(buttons);
+    state.projectIndex += 1;
+  }
+
+  function renderClients(flow) {
+    let html = `<div class="rich-paragraph"><p>${flow.intro}</p></div>`;
+    html += `<div class="client-logos-wrapper">`;
+    flow.logos.forEach((logo, index) => {
+      html += `
+        <div class="client-logo-item animated-logo" style="animation-delay:${index * 80}ms">
+          <img src="${escapeHtml(logo.logo)}" alt="${escapeHtml(logo.name)}">
+        </div>
+      `;
+    });
+    html += `</div>`;
+    appendAIMessage(html, { html: true });
+    addOptions(flow.options || []);
+  }
+
+  function renderContact(flow) {
+    let html = `<div class="contact-section-wrapper"><div class="rich-paragraph"><p>${flow.intro}</p></div>`;
+
+    flow.direct.forEach((item) => {
+      html += `
+        <div class="contact-direct-row">
+          <i class="${escapeHtml(item.icon)}"></i>
+          <span class="type-target">${escapeHtml(item.label)}</span>
+          <span>${escapeHtml(item.value)}</span>
+        </div>
+      `;
     });
 
-    const preloader = document.getElementById("preloader");
-    if (preloader) {
-        window.addEventListener("load", function () {
-            preloader.classList.add("fade-out");
-            setTimeout(() => preloader.style.display = "none", 600);
-        });
+    html += `<div class="contact-social-row">`;
+    flow.socials.forEach((item) => {
+      html += `
+        <a href="${escapeHtml(item.url)}" target="_blank" class="contact-social-icon visible">
+          <i class="${escapeHtml(item.icon)} ${escapeHtml(item.styleClass)}"></i>
+        </a>
+      `;
+    });
+    html += `</div></div>`;
+
+    appendAIMessage(html, { html: true });
+    addOptions(flow.options || []);
+  }
+
+  async function startConversation(flowId, visibleUserText = "") {
+    hideIntro();
+
+    if (visibleUserText) appendUserMessage(visibleUserText);
+
+    if (flowId === "__next_project") {
+      renderNextProject();
+      return;
     }
-});
+
+    const flow = state.flows[flowId] || state.flows.error;
+    if (!flow) return;
+
+    setBusy(true);
+    const typing = showTyping();
+
+    await new Promise((resolve) => setTimeout(resolve, 450));
+    typing.remove();
+
+    if (flow.type === "projects") renderProjects(flow);
+    else if (flow.type === "clients") renderClients(flow);
+    else if (flow.type === "contact") renderContact(flow);
+    else renderGeneric(flow);
+
+    setBusy(false);
+    toggleSendButtonState();
+  }
+
+  function handleUserSubmit() {
+    const text = chatInput.value.trim();
+    if (!text) return;
+    chatInput.value = "";
+    toggleSendButtonState();
+    const flowId = findFlowId(text);
+    startConversation(flowId, text);
+  }
+
+  function setupNavigation() {
+    qsa("[data-action], [data-flow]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        const targetModal = button.getAttribute("data-target");
+        if (targetModal) return; // handled by custom modal script in index.html
+
+        const action = button.getAttribute("data-action") || button.getAttribute("data-flow");
+        if (!action || action === "none") return;
+
+        if (action === "open_contact_form") {
+          openContactModal();
+          return;
+        }
+
+        const label = button.textContent.trim();
+        startConversation(action, label);
+      });
+    });
+
+    qsa("[data-link]").forEach((button) => {
+      button.addEventListener("click", (event) => {
+        const link = button.getAttribute("data-link");
+        if (!link) return;
+        event.stopPropagation();
+        if (button.hasAttribute("onclick")) return;
+        window.open(link, "_blank");
+      });
+    });
+  }
+
+  function setupInput() {
+    chatInput.addEventListener("input", toggleSendButtonState);
+    sendButton.addEventListener("click", handleUserSubmit);
+    chatInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        handleUserSubmit();
+      }
+    });
+  }
+
+  function setupMenuToggle() {
+    if (!menuButton) return;
+    menuButton.addEventListener("click", () => {
+      document.body.classList.toggle("open-menu");
+    });
+  }
+
+  function setupMasterModal() {
+    const modal = qs(selectors.masterModal);
+    if (!modal) return;
+
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal) closeContactModal();
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeContactModal();
+    });
+  }
+
+  function setupContactForm() {
+    const form = qs(selectors.contactForm);
+    if (!form) return;
+
+    form.addEventListener("submit", (event) => {
+      event.preventDefault();
+
+      const name = form.querySelector('[name="user_name"]')?.value.trim() || "";
+      const email = form.querySelector('[name="user_email"]')?.value.trim() || "";
+      const message = form.querySelector('[name="user_message"]')?.value.trim() || "";
+
+      const mailto = `mailto:itx.ammarshahid1234@gmail.com?subject=${encodeURIComponent("Portfolio Inquiry from " + name)}&body=${encodeURIComponent(`Name: ${name}\nEmail: ${email}\n\nMessage:\n${message}`)}`;
+      window.location.href = mailto;
+
+      form.reset();
+      closeContactModal();
+      startConversation("msg_success");
+    });
+  }
+
+  function setupThemeToggle() {
+    const checkbox = qs("#checkbox");
+    if (!checkbox) return;
+
+    const savedTheme = localStorage.getItem("portfolio-theme");
+    if (savedTheme === "dark") {
+      document.body.classList.add("dark");
+      checkbox.checked = true;
+    }
+
+    checkbox.addEventListener("change", () => {
+      document.body.classList.toggle("dark", checkbox.checked);
+      localStorage.setItem("portfolio-theme", checkbox.checked ? "dark" : "light");
+    });
+  }
+
+  function setupProjectMediaClicks() {
+    document.addEventListener("click", (event) => {
+      const media = event.target.closest(".project-media-wrapper");
+      if (!media) return;
+
+      const index = Number(media.getAttribute("data-project-index"));
+      const project = state.projects[index];
+      if (!project) return;
+
+      if (project.media === "youtube" && project.youtubeId) {
+        openMasterModal(`
+          <iframe width="100%" height="420" src="https://www.youtube.com/embed/${escapeHtml(project.youtubeId)}?autoplay=1" frameborder="0" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+        `);
+      } else if (project.media === "video" && project.videoUrl) {
+        openMasterModal(`<video src="${escapeHtml(project.videoUrl)}" controls autoplay style="width:100%"></video>`);
+      } else if (project.media === "gallery" && project.gallery.length) {
+        const images = project.gallery.map((src) => `<img src="${escapeHtml(src)}" alt="" style="width:100%;border-radius:20px;margin-bottom:15px;display:block;">`).join("");
+        openMasterModal(images);
+      } else if (project.image) {
+        openMasterModal(`<img src="${escapeHtml(project.image)}" alt="${escapeHtml(project.title)}" style="width:100%;border-radius:20px;display:block;">`);
+      }
+    });
+  }
+
+  function init() {
+    chatWindow = qs(selectors.chatWindow);
+    chatInput = qs(selectors.chatInput);
+    sendButton = qs(selectors.sendButton);
+    menuButton = qs(selectors.menuButton);
+    introScreen = qs(selectors.introScreen);
+
+    if (!chatWindow || !chatInput || !sendButton) return;
+
+    parseGenericFlows();
+    parseProjectsFlow();
+    parseClientsFlow();
+    parseContactFlow();
+
+    setupNavigation();
+    setupInput();
+    setupMenuToggle();
+    setupMasterModal();
+    setupContactForm();
+    setupThemeToggle();
+    setupProjectMediaClicks();
+    toggleSendButtonState();
+
+    const preloader = qs("#preloader");
+    setTimeout(() => preloader?.classList.add("preloaded"), 500);
+  }
+
+  return { init, startConversation };
+})();
+
+function openMasterModal(html = "") {
+  const modal = document.querySelector("#master-modal");
+  const content = document.querySelector("#modal-content-area");
+  if (!modal || !content) return;
+  if (html) content.innerHTML = html;
+  modal.classList.add("modal-contact");
+  modal.classList.add("visible");
+  document.body.style.overflow = "hidden";
+}
+
+function closeMasterModal() {
+  const modal = document.querySelector("#master-modal");
+  if (!modal) return;
+  modal.classList.remove("visible");
+  modal.classList.remove("modal-contact");
+  document.body.style.overflow = "";
+}
+
+function openContactModal() {
+  openMasterModal();
+}
+
+function closeContactModal() {
+  closeMasterModal();
+}
+
+function downloadCV() {
+  window.open("assets/link-to-cv.html", "_blank");
+}
+
+window.addEventListener("DOMContentLoaded", App.init);

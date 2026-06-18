@@ -1,7 +1,142 @@
-<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
-<html><head>
-<title>404 Not Found</title>
-</head><body>
-<h1>Not Found</h1>
-<p>The requested URL was not found on this server.</p>
-</body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Downloading CV...</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Inter,Arial,sans-serif;
+}
+
+body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:#f5f9fd;
+}
+
+.card{
+    background:#fff;
+    padding:40px;
+    border-radius:20px;
+    text-align:center;
+    box-shadow:0 10px 40px rgba(0,0,0,.08);
+    max-width:500px;
+    width:90%;
+}
+
+.icon{
+    width:80px;
+    height:80px;
+    margin:auto;
+    border-radius:50%;
+    background:#e8f4ff;
+    color:#0060AE;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:36px;
+    margin-bottom:20px;
+}
+
+h2{
+    color:#111827;
+    margin-bottom:10px;
+}
+
+p{
+    color:#6b7280;
+    line-height:1.7;
+}
+
+.loader{
+    margin:20px auto 0;
+    width:40px;
+    height:40px;
+    border:4px solid #dbeafe;
+    border-top:4px solid #0060AE;
+    border-radius:50%;
+    animation:spin 1s linear infinite;
+}
+
+.back-btn{
+    display:none;
+    margin-top:25px;
+    padding:12px 24px;
+    border-radius:10px;
+    background:#0060AE;
+    color:#fff;
+    border:none;
+    text-decoration:none;
+    font-weight:600;
+    cursor:pointer;
+}
+
+.back-btn:hover{
+    background:#004f91;
+}
+
+@keyframes spin{
+    100%{
+        transform:rotate(360deg);
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+    <div class="icon" id="icon">📄</div>
+
+    <h2 id="title">CV Download Started</h2>
+
+    <p id="message">
+        CV is being downloaded automatically.
+        Please wait a moment.
+    </p>
+
+    <div class="loader" id="loader"></div>
+
+   <a href="../index.html" class="back-btn" id="backBtn">
+    ← Back to Portfolio
+</a>
+</div>
+
+<script>
+window.addEventListener("load", () => {
+
+    setTimeout(() => {
+        const link = document.createElement("a");
+
+        link.href = "../assets/cv/Ammar-Shahid-CV.pdf";
+        link.download = "Ammar-Shahid-CV.pdf";
+
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }, 600);
+
+    setTimeout(() => {
+        document.getElementById("icon").innerHTML = "✅";
+        document.getElementById("title").innerText = "Download Completed";
+        document.getElementById("message").innerText = "CV has been downloaded successfully.";
+        document.getElementById("loader").style.display = "none";
+        document.getElementById("backBtn").style.display = "inline-block";
+    }, 2500);
+
+});
+
+// function goBack(){
+//     window.location.href = "./index.html";
+// }
+</script>
+
+</body>
+</html>
