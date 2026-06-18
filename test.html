@@ -1,295 +1,223 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Reusable Modal</title>
-
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
 <style>
+    .zenora-alert{
+    border-radius:24px !important;
+    padding:20px !important;
+    box-shadow:0 20px 60px rgba(0,96,174,.25) !important;
+}
 
+.swal2-title{
+    font-size:24px !important;
+    font-weight:700 !important;
+}
 
-.open-btn{
+.swal2-confirm{
+    border-radius:12px !important;
+    padding:12px 24px !important;
+}
+:root{
+    --reach-primary:#0060AE;
+}
+
+.zenora-reach-btn{
+    padding:12px 24px;
     border:none;
-    background:#0060AE;
-    color:#fff;
-    padding:14px 24px;
     border-radius:12px;
+    background:var(--reach-primary);
+    color:#fff;
     cursor:pointer;
-    font-size:15px;
     font-weight:600;
-    transition:.3s;
 }
 
-.open-btn:hover{
-    background:#004f91;
-    transform:translateY(-2px);
-}
-
-.modal{
+.zenora-reach-layer{
     position:fixed;
     inset:0;
-    background:rgba(15,23,42,.65);
+    background:rgba(0,0,0,.55);
     backdrop-filter:blur(6px);
     display:flex;
     align-items:center;
     justify-content:center;
-    padding:20px;
     opacity:0;
     visibility:hidden;
-    pointer-events:none;
     transition:.35s ease;
-    z-index:9999;
+    z-index:99999;
 }
 
-.modal.show{
+.zenora-reach-layer.is-visible{
     opacity:1;
     visibility:visible;
-    pointer-events:auto;
 }
 
-.modal-box{
-    width:100%;
-    max-width:560px;
-    background:#fff;
-    border-radius:22px;
-    overflow:hidden;
-    position:relative;
-    box-shadow:0 25px 80px rgba(0,0,0,.25);
-    transform:translateY(35px) scale(.95);
-    opacity:0;
-    transition:.35s ease;
-}
-
-.modal.show .modal-box{
+.zenora-reach-layer.is-visible .zenora-reach-box{
     transform:translateY(0) scale(1);
-    opacity:1;
 }
 
-.modal-header{
+.zenora-reach-box{
+    width:100%;
+    max-width:420px;
+    margin:20px;
+    background:#fff;
+    border-radius:24px;
     padding:28px;
-    background:linear-gradient(135deg,#0060AE,#1687df);
-    color:#fff;
     position:relative;
-    overflow:hidden;
+    transform:translateY(40px) scale(.9);
+    transition:.35s ease;
+    box-shadow:0 20px 60px rgba(0,0,0,.15);
 }
 
-.modal-header::before{
-    content:"";
-    position:absolute;
-    width:160px;
-    height:160px;
+.zenora-reach-box h3{
+    margin:12px 0 8px;
+    text-align:center;
+}
+
+.zenora-reach-box p{
+    text-align:center;
+    color:#64748b;
+    margin-bottom:20px;
+    line-height:1.5;
+}
+
+.zenora-reach-icon{
+    width:65px;
+    height:65px;
+    margin:auto;
     border-radius:50%;
-    background:rgba(255,255,255,.13);
-    top:-70px;
-    right:-40px;
-}
-
-.modal-header h2{
-    font-size:24px;
-    margin-bottom:6px;
-    position:relative;
-}
-
-.modal-header p{
-    font-size:14px;
-    opacity:.9;
-    position:relative;
-}
-
-.modal-close{
-    position:absolute;
-    top:16px;
-    right:16px;
-    width:42px;
-    height:42px;
-    border:none;
-    border-radius:14px;
-    background:rgba(255,255,255,.18);
-    color:#fff;
+    background:rgba(0,96,174,.12);
     display:flex;
     align-items:center;
     justify-content:center;
+    font-size:28px;
+}
+
+.zenora-reach-close{
+    position:absolute;
+    right:15px;
+    top:15px;
+    width:35px;
+    height:35px;
+    border:none;
+    border-radius:50%;
+    background:#f1f5f9;
     cursor:pointer;
-    transition:.3s ease;
-    z-index:2;
 }
 
-.modal-close i{
-    font-size:18px;
-}
-
-.modal-close:hover{
-    background:#fff;
-    color:#0060AE;
-    transform:rotate(90deg);
-}
-
-.modal-body{
-    padding:28px;
-    color:#334155;
-    line-height:1.7;
-    font-size:15px;
-}
-
-.info-card{
-    background:#f1f7fc;
-    border:1px solid #d9eaf8;
-    padding:16px;
-    border-radius:14px;
-    margin-top:15px;
-}
-
-.modal-footer{
-    padding:20px 28px;
-    border-top:1px solid #e5e7eb;
+.zenora-reach-form{
     display:flex;
-    justify-content:flex-end;
+    flex-direction:column;
     gap:12px;
 }
 
-.btn{
+.zenora-reach-form input,
+.zenora-reach-form textarea{
+    width:100%;
+    border:1px solid #e2e8f0;
+    border-radius:12px;
+    padding:14px;
+    outline:none;
+}
+
+.zenora-reach-form input:focus,
+.zenora-reach-form textarea:focus{
+    border-color:var(--reach-primary);
+}
+
+.zenora-reach-form button{
+    height:50px;
     border:none;
-    padding:12px 22px;
-    border-radius:11px;
+    border-radius:12px;
+    background:var(--reach-primary);
+    color:#fff;
     cursor:pointer;
     font-weight:600;
-    transition:.3s;
-}
-
-.btn-cancel{
-    background:#e5e7eb;
-    color:#111827;
-}
-
-.btn-cancel:hover{
-    background:#d1d5db;
-}
-
-.btn-save{
-    background:#0060AE;
-    color:#fff;
-}
-
-.btn-save:hover{
-    background:#004f91;
-}
-
-@media(max-width:768px){
-    body{
-        flex-direction:column;
-    }
-
-    .modal{
-        padding:16px;
-    }
-
-    .modal-box{
-        max-width:100%;
-        border-radius:18px;
-    }
-
-    .modal-header,
-    .modal-body,
-    .modal-footer{
-        padding:22px;
-    }
-
-    .modal-footer{
-        flex-direction:column;
-    }
-
-    .btn{
-        width:100%;
-    }
 }
 </style>
-</head>
-
 <body>
-
-<button class="open-btn" data-target="profileModal">
-    Open Profile Modal
-</button>
-
-
-
-<div class="modal" data-modal="profileModal">
-    <div class="modal-box">
-
-        <button class="modal-close" aria-label="Close">
-            <i class="fa-solid fa-xmark"></i>
-        </button>
-
-        <div class="modal-header">
-            <h2>Profile Details</h2>
-            <p>Reusable modal with smooth animation</p>
-        </div>
-
-        <div class="modal-body">
-            <p>
-                Ye modal reusable hai. Sirf button ka 
-                <b>data-target</b> aur modal ka <b>data-modal</b> same rakhna hai.
-            </p>
-
-            <div class="info-card">
-                Is modal ko multiple times use kar sakty ho. Animation, overlay,
-                responsive layout aur ESC close bhi included hai.
+    <!-- Trigger Button -->
+    <button id="zenoraReachBtn" class="zenora-reach-btn">
+        Contact Me
+    </button>
+    
+    <!-- Modal -->
+    <div id="zenoraReachLayer" class="zenora-reach-layer">
+        <div class="zenora-reach-box">
+    
+            <button id="zenoraReachClose" class="zenora-reach-close">
+                ✕
+            </button>
+    
+            <div class="zenora-reach-icon">
+                💬
             </div>
+    
+            <h3>Let's Talk</h3>
+    
+            <p>
+                Have a project idea or question?
+                Feel free to send a message.
+            </p>
+    
+            <form class="zenora-reach-form">
+                <input type="text" placeholder="Your Name">
+                <input type="email" placeholder="Email Address">
+                <textarea rows="4" placeholder="Write your message..."></textarea>
+    
+                <button type="submit">
+                    Send Message
+                </button>
+            </form>
+    
         </div>
-
-        <div class="modal-footer">
-            <button class="btn btn-cancel modal-close-btn">Cancel</button>
-            <button class="btn btn-save">Save Changes</button>
-        </div>
-
     </div>
-</div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        const zenoraReachBtn = document.getElementById("zenoraReachBtn");
+const zenoraReachLayer = document.getElementById("zenoraReachLayer");
+const zenoraReachClose = document.getElementById("zenoraReachClose");
 
-
-<script>
-const openButtons = document.querySelectorAll("[data-target]");
-
-openButtons.forEach(button => {
-    button.addEventListener("click", () => {
-        const modalName = button.getAttribute("data-target");
-        const modal = document.querySelector(`[data-modal="${modalName}"]`);
-
-        if(modal){
-            modal.classList.add("show");
-            document.body.style.overflow = "hidden";
-        }
-    });
+zenoraReachBtn.addEventListener("click", () => {
+    zenoraReachLayer.classList.add("is-visible");
 });
 
-function closeModal(modal){
-    modal.classList.remove("show");
-    document.body.style.overflow = "";
-}
-
-document.querySelectorAll(".modal").forEach(modal => {
-    modal.addEventListener("click", e => {
-        if(e.target === modal){
-            closeModal(modal);
-        }
-    });
-
-    modal.querySelectorAll(".modal-close, .modal-close-btn").forEach(closeBtn => {
-        closeBtn.addEventListener("click", () => {
-            closeModal(modal);
-        });
-    });
+zenoraReachClose.addEventListener("click", () => {
+    zenoraReachLayer.classList.remove("is-visible");
 });
 
-document.addEventListener("keydown", e => {
-    if(e.key === "Escape"){
-        document.querySelectorAll(".modal.show").forEach(modal => {
-            closeModal(modal);
-        });
+zenoraReachLayer.addEventListener("click", (e) => {
+    if (e.target === zenoraReachLayer) {
+        zenoraReachLayer.classList.remove("is-visible");
     }
 });
-</script>
 
+const zenoraForm = document.querySelector(".zenora-reach-form");
+
+zenoraForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+
+Swal.fire({
+    icon: "success",
+    title: "Message Delivered 🚀",
+    html: `
+        <p>Your message has been successfully submitted.</p>
+        <small>We'll respond as soon as possible.</small>
+    `,
+    confirmButtonText: "Great!",
+    confirmButtonColor: "#0060AE",
+    backdrop: `
+        rgba(0,0,0,0.7)
+    `,
+    customClass: {
+        popup: "zenora-alert"
+    }
+});
+    zenoraForm.reset();
+    zenoraReachLayer.classList.remove("is-visible");
+});
+    </script>
 </body>
 </html>
