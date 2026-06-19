@@ -73,8 +73,8 @@ body.rtl {
 }
 
 body.rtl,
-body.rtl .ajax-contact-form input,
-body.rtl .ajax-contact-form textarea,
+body.rtl .ajax-new1-contact-form input,
+body.rtl .ajax-new1-contact-form textarea,
 body.rtl .chat-footer .input-area-visual input,
 body.rtl .intro-screen .intro-text h1,
 body.rtl .intro-screen .intro-text h2,
@@ -266,7 +266,7 @@ body.rtl .contact-section-wrapper .contact-direct-row i {
     margin-left: 10px;
 }
 
-body.rtl .ajax-contact-form .btn-primary {
+body.rtl .ajax-new1-contact-form .btn-primary {
     margin-left: 0;
     margin-right: auto;
 }
@@ -1706,14 +1706,14 @@ body.dark .modal-overlay {
     font-size: 1.5rem;
 }
 
-.ajax-contact-form {
+.ajax-new1-contact-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
 }
 
-.ajax-contact-form input,
-.ajax-contact-form textarea {
+.ajax-new1-contact-form input,
+.ajax-new1-contact-form textarea {
     width: 100%;
     padding: 14px 20px;
     border: 1px solid rgba(0, 0, 0, 0.1);
@@ -1724,21 +1724,21 @@ body.dark .modal-overlay {
     font-family: 'Geist', sans-serif;
 }
 
-.ajax-contact-form textarea {
+.ajax-new1-contact-form textarea {
     height: 150px;
 }
 
-.ajax-contact-form input:focus,
-.ajax-contact-form textarea:focus {
+.ajax-new1-contact-form input:focus,
+.ajax-new1-contact-form textarea:focus {
     outline: none;
 }
 
-.ajax-contact-form .btn-primary {
+.ajax-new1-contact-form .btn-primary {
     margin-left: auto;
     cursor: pointer;
 }
 
-.ajax-contact-form .btn-primary:disabled {
+.ajax-new1-contact-form .btn-primary:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
